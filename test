@@ -1,0 +1,10 @@
+from kaggle_environments import evaluate, make, utils
+import gym
+env = make("connectx", debug=True)
+env.render()
+#Creates a new random trainer
+trainer = env.train([None, 'negamax'])
+#Resets the board, shows initial state of all 0
+trainer.reset()['board']
+#Make a new action: play position 4
+new_obs, winner, state, info = trainer.step(4)
