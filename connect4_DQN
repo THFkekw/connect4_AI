@@ -1,0 +1,42 @@
+import numpy as np
+import tensorflow as tf
+import kaggle_environments
+import random
+
+def Reward(winner,state,invalidAction):
+    if not state:
+        reward = 0
+
+    if winner == 1:
+        reward = 100
+    elif winner == 0:
+        reward = 0
+    else:
+        reward = -100
+
+    if invalidAction:
+        reward = -5
+
+    return reward
+
+def train_step(model, optimizer, observations, actions, rewards):
+    with tf.GradientTape() as tape:
+      #Propagate through the agent network
+        logits = model(observations)
+        softmax_cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=actions)
+        loss = tf.reduce_mean(softmax_cross_entropy * rewards)
+        grads = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(grads, model.trainable_variables)) 
+
+def isValid(action,board,only_check=false,only_return=false):
+    valid
+    resh_board = np.array(board).reshape(6,7)
+    if resh_board[0][action] != 0:
+        action = random.randint(0,6)
+        valid = false
+    if only_check:
+        return valid
+    elif only_return:
+        return action
+    else:
+        return action,valid
