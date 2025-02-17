@@ -161,7 +161,7 @@ def train_model(model):
     print(win_track)
 
 def main():
-    pass
+    train_model(make_model())
 
 if __name__ =="__main__":
-    pass
+    main()
