@@ -164,4 +164,6 @@ def main():
     train_model(make_model())
 
 if __name__ =="__main__":
+    tf.test.is_built_with_cuda()
+    tf.test.is_gpu_available(cuda_only=True)
     main()
