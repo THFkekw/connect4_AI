@@ -44,12 +44,11 @@ def getReward(winner,state,invalidAction,turns):
     elif winner == 0:
         reward = -500
     else:
-        reward = -1000
+        reward = -1500
 
     if not invalidAction:
         reward = -1
 
-    reward += turns * 10
 
     return reward
 
@@ -198,5 +197,5 @@ def main(rounds):
     train_model(make_model(),rounds)
 
 if __name__ =="__main__":
-    rounds =  50
+    rounds =  500
     main(rounds)
