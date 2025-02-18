@@ -103,7 +103,16 @@ def make_model():
     model.add(layers.Dense(7,activation="linear"))
     return model
 
-def train_model(model):
+def saveModel(model):
+    pass
+
+def loadModel():
+    pass
+
+def testModel(model,rounds):
+    pass
+
+def train_model(model,rounds):
     #Train P1 (model) against random agent P2
     #Create the environment
     env = make("connectx", debug=True)
@@ -116,7 +125,7 @@ def train_model(model):
     wins = 0
     win_track = []
     i = 0
-    for episode in range(100):
+    for episode in range(rounds):
         print(i)
         i +=1
         #Set up random trainer
@@ -161,7 +170,7 @@ def train_model(model):
     print(win_track)
 
 def main():
-    train_model(make_model())
+    train_model(makeModel(),100)
 
 if __name__ =="__main__":
     main()
