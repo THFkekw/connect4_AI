@@ -35,19 +35,21 @@ def makeMove(observation):
     action = np.argmax(weights)
     return action
 
-def getReward(winner,state,invalidAction):
+def getReward(winner,state,invalidAction,turns):
     if not state:
         reward = 0
 
     if winner == 1:
-        reward = 100
+        reward = 1000
     elif winner == 0:
-        reward = 0
+        reward = -500
     else:
-        reward = -100
+        reward = -1000
 
     if not invalidAction:
-        reward = -5
+        reward = -1
+
+    reward += turns * 10
 
     return reward
 
@@ -68,14 +70,12 @@ def checkValid(action_,board,only_check=False,only_return=False):
     
     if resh_board[0][action] != 0:
         valid = True
-        for i in range (6):
+        for i in range (20):
+            if action >6:
+                    action = 0
             if resh_board[0][action] != 0:
-                if action == 0:
-                    action += 1
-                elif action == 6:
-                    action -=1
-                else:
-                    action +=1  
+                
+                action +=1  
                 valid = False     
             else:
                 
@@ -133,11 +133,14 @@ def train_model(model,rounds,verbose=False):
     optimizer = tf.keras.optimizers.Adam()
     #Set up the experience storage
     exp = Experience()
-    epsilon = 0.2
-    epsilon_rate = 1
+    epsilon = 0.8
+    epsilon_rate = 0.999
     wins = 0
     win_track = []
     i = 0
+    epsilon_cap = 0.15
+    turns = 0
+    
     for episode in range(rounds):
         print(i)
         i +=1
@@ -149,9 +152,13 @@ def train_model(model,rounds,verbose=False):
         exp.clear()
         #Decrease epsilon over time if we want
         epsilon = epsilon * epsilon_rate
+        if epsilon < epsilon_cap:
+            epsilon = epsilon_cap
         #Set initial state
         state = False
+        turns = 0
         while not state:
+
             #Get action
             action, w = getAction(model, obs, epsilon)
             #Check if action is valid
@@ -163,9 +170,11 @@ def train_model(model,rounds,verbose=False):
                     break
             #Play the action and retrieve info
             new_obs, winner, state, info = trainer.step(action)
+            #print(winner)
             obs = np.array(new_obs['board']).reshape(6,7)
+            turns += 1
             #Get reward
-            reward = getReward(winner, state,valid)
+            reward = getReward(winner, state,valid,turns)
             #Store experience
             exp.store_experience(obs, action, reward)
             #Break if game is over
@@ -185,8 +194,9 @@ def train_model(model,rounds,verbose=False):
                 print(env.render(mode="ansi"))
     print(win_track)
 
-def main():
-    train_model(make_model(),100)
+def main(rounds):
+    train_model(make_model(),rounds)
 
 if __name__ =="__main__":
-    main()
+    rounds =  50
+    main(rounds)
