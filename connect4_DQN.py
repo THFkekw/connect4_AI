@@ -109,7 +109,7 @@ def saveModel(model):
 def loadModel():
     pass
 
-def testModel(model,rounds):
+def testModel(model,rounds,verbose=False):
     pass
 
 def train_model(model,rounds):
@@ -164,9 +164,11 @@ def train_model(model,rounds):
                                 observations = np.array(exp.observations),
                                 actions = np.array(exp.actions),
                                 rewards = exp.rewards)
-                print(env.render(mode="ansi"))
+                if verbose:
+                    print(env.render(mode="ansi"))
                 break
-            print(env.render(mode="ansi"))
+            if verbose:
+                print(env.render(mode="ansi"))
     print(win_track)
 
 def main():
