@@ -40,14 +40,17 @@ def getReward(winner,state,invalidAction,turns):
         reward = 0
 
     if winner == 1:
-        reward = 1000
+        reward = 1000 #* 25/turns
     elif winner == 0:
-        reward = -500
+        reward = -1000
     else:
-        reward = -1500
+        reward = -10000
+
+    #reward += turns * 3
 
     if not invalidAction:
-        reward = -1
+        #reward = -50
+        pass
 
 
     return reward
@@ -108,10 +111,19 @@ def make_model():
     model = keras.Sequential()
     model.add(layers.Input(shape=[6,7]))
     model.add(layers.Flatten())
-    model.add(layers.Dense(50,activation="relu"))
-    model.add(layers.Dense(50,activation="relu"))
-    model.add(layers.Dense(50,activation="relu"))
-    model.add(layers.Dense(50,activation="relu"))
+    #model.add(layers.Dense(100,activation="relu"))
+    model.add(layers.Dense(448,activation="relu"))
+    model.add(layers.Dense(112,activation="relu"))
+    model.add(layers.Dense(28,activation="relu"))
+    #model.add(layers.Dense(5,activation="relu"))
+    #model.add(layers.Dense(5,activation="relu"))
+    #model.add(layers.Dense(5,activation="relu"))
+    #model.add(layers.Dense(5,activation="relu"))
+    #model.add(layers.Dense(5,activation="relu"))
+    #model.add(layers.Dense(1000,activation="relu"))
+
+    #model.add(layers.Dense(1000,activation="relu"))
+    #model.add(layers.Dense(100,activation="relu"))
     model.add(layers.Dense(7,activation="linear"))
     return model
 
@@ -124,7 +136,7 @@ def loadModel():
 def testModel(model,rounds):
     pass
 
-def train_model(model,rounds,verbose=False):
+def train_model(model,rounds,verbose=False,adversary="random"):
     #Train P1 (model) against random agent P2
     #Create the environment
     env = make("connectx", debug=True)
@@ -132,19 +144,19 @@ def train_model(model,rounds,verbose=False):
     optimizer = tf.keras.optimizers.Adam()
     #Set up the experience storage
     exp = Experience()
-    epsilon = 0.8
-    epsilon_rate = 0.999
+    epsilon = 1
+    epsilon_rate = 0.99
     wins = 0
     win_track = []
     i = 0
-    epsilon_cap = 0.15
+    epsilon_cap = 0.005
     turns = 0
     
     for episode in range(rounds):
         print(i)
         i +=1
         #Set up random trainer
-        trainer = env.train([None, 'random'])
+        trainer = env.train([None, adversary])
         #First observation
         obs = np.array(trainer.reset()['board']).reshape(6,7)
         #Clear cache
@@ -194,7 +206,9 @@ def train_model(model,rounds,verbose=False):
     print(win_track)
 
 def main(rounds):
-    train_model(make_model(),rounds)
+    model = make_model()
+    train_model(model,rounds)
+    train_model(model,rounds,adversary="negamax")
 
 if __name__ =="__main__":
     rounds =  500
