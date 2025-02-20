@@ -35,6 +35,98 @@ def makeMove(observation):
     action = np.argmax(weights)
     return action
 
+    def checkBoardForPattern(board, piece,pattern):
+        pattern_len = len(pattern)
+        # Check horizontal locations for win
+        for c in range(COLUMN_COUNT-3):
+            for r in range(ROW_COUNT):
+                if board[r][c] == piece and board[r][c+1] == piece and board[r][c+2] == piece and board[r][c+3] == piece:
+                    return True
+
+        # Check vertical locations for win
+        for c in range(COLUMN_COUNT):
+            for r in range(ROW_COUNT-3):
+                if board[r][c] == piece and board[r+1][c] == piece and board[r+2][c] == piece and board[r+3][c] == piece:
+                    return True
+
+        # Check positively sloped diaganols
+        for c in range(COLUMN_COUNT-3):
+            for r in range(ROW_COUNT-3):
+                if board[r][c] == piece and board[r+1][c+1] == piece and board[r+2][c+2] == piece and board[r+3][c+3] == piece:
+                    return True
+
+        # Check negatively sloped diaganols
+        for c in range(COLUMN_COUNT-3):
+            for r in range(3, ROW_COUNT):
+                if board[r][c] == piece and board[r-1][c+1] == piece and board[r-2][c+2] == piece and board[r-3][c+3] == piece:
+                    return True
+
+def checkBoardForNLine(board, piece,n=3):
+        ROW_COUNT = 6
+        COLUMN_COUNT = 7
+        finds = 0
+        true_count=0
+        # Check horizontal locations for win
+        for c in range(COLUMN_COUNT-n):
+            for r in range(ROW_COUNT):
+                for i in range(n):
+                    if board[r][c+n] == piece:
+                        true_count += 1
+                    else:
+                        true_count = 0
+        if true_count/n >= 1:
+            finds += true_count%n +1
+        true_count = 0
+
+        # Check vertical locations for win
+        for c in range(COLUMN_COUNT):
+            for r in range(ROW_COUNT-n):
+                for i in range(n):
+                    if board[r+n][c] == piece:
+                        true_count += 1
+                    else:
+                        true_count = 0
+        if true_count/n >= 1:
+            finds += true_count%n +1
+        true_count = 0
+
+        # Check positively sloped diaganols
+        for c in range(COLUMN_COUNT-n):
+            for r in range(ROW_COUNT-n):
+                for i in range(n):
+                    if board[r+n][c+n] == piece:
+                        true_count += 1
+                    else:
+                        true_count = 0
+        if true_count/n >= 1:
+            finds += true_count%n +1
+        true_count = 0
+
+        # Check negatively sloped diaganols
+        for c in range(COLUMN_COUNT-n):
+            for r in range(n, ROW_COUNT):
+                for i in range(n):
+                    if board[r-n][c+n] == piece:
+                        true_count += 1
+                    else:
+                        true_count = 0
+        if true_count/n >= 1:
+            finds += true_count%n +1
+        true_count = 0
+        return finds
+
+def giveRewardOnCondition(reward_func,team,board,reward,condition,exp=False):
+    finds = reward_func(board,team,condition)
+    final_reward = 0
+    if exp:
+        final_reward = reward ** finds
+    else:
+        final_reward = reward * finds
+
+    if finds == 0:
+        final_reward = 0
+    return final_reward
+
 def getReward(winner,state,invalidAction,turns):
     if not state:
         reward = 0
@@ -42,7 +134,7 @@ def getReward(winner,state,invalidAction,turns):
     if winner == 1:
         reward = 1000 #* 25/turns
     elif winner == 0:
-        reward = -1000
+        reward = 0
     else:
         reward = -10000
 
@@ -186,6 +278,9 @@ def train_model(model,rounds,verbose=False,adversary="random"):
             turns += 1
             #Get reward
             reward = getReward(winner, state,valid,turns)
+            reward += giveRewardOnCondition(checkBoardForNLine,1,np.array(new_obs['board']).reshape(6,7),20,3,False)
+            reward += giveRewardOnCondition(checkBoardForNLine,1,np.array(new_obs['board']).reshape(6,7),75,3,False)
+            reward -= giveRewardOnCondition(checkBoardForNLine,2,np.array(new_obs['board']).reshape(6,7),75,3,False)
             #Store experience
             exp.store_experience(obs, action, reward)
             #Break if game is over
@@ -199,16 +294,19 @@ def train_model(model,rounds,verbose=False,adversary="random"):
                                 actions = np.array(exp.actions),
                                 rewards = exp.rewards)
                 if verbose:
-                    print(env.render(mode="ansi"))
+                    #print(env.render(mode="ansi"))
+                    #print(new_obs)
+                    print(exp.rewards)
                 break
             if verbose:
-                print(env.render(mode="ansi"))
+                #print(env.render(mode="ansi"))
+                pass
     print(win_track)
 
 def main(rounds):
     model = make_model()
-    train_model(model,rounds)
-    train_model(model,rounds,adversary="negamax")
+    train_model(model,rounds,verbose=True)
+    #train_model(model,rounds,adversary="negamax")
 
 if __name__ =="__main__":
     rounds =  500
