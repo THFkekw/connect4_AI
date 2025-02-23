@@ -237,11 +237,11 @@ def train_model(model,rounds,verbose=False,adversary="random"):
     #Set up the experience storage
     exp = Experience()
     epsilon = 1
-    epsilon_rate = 0.99
+    epsilon_rate = 0.9999
     wins = 0
     win_track = []
     i = 0
-    epsilon_cap = 0.005
+    epsilon_cap = 0.0005
     turns = 0
     
     for episode in range(rounds):
@@ -260,6 +260,7 @@ def train_model(model,rounds,verbose=False,adversary="random"):
         #Set initial state
         state = False
         turns = 0
+        init_reward = 0
         while not state:
 
             #Get action
@@ -277,11 +278,19 @@ def train_model(model,rounds,verbose=False,adversary="random"):
             obs = np.array(new_obs['board']).reshape(6,7)
             turns += 1
             #Get reward
-            reward = getReward(winner, state,valid,turns)
-            reward += giveRewardOnCondition(checkBoardForNLine,1,np.array(new_obs['board']).reshape(6,7),20,3,False)
-            reward += giveRewardOnCondition(checkBoardForNLine,1,np.array(new_obs['board']).reshape(6,7),75,3,False)
-            reward -= giveRewardOnCondition(checkBoardForNLine,2,np.array(new_obs['board']).reshape(6,7),75,3,False)
+            reward_ = 0
+            reward_ += getReward(winner, state,valid,turns)
+            reward_ += giveRewardOnCondition(checkBoardForNLine,1,np.array(new_obs['board']).reshape(6,7),20,3,False)
+            reward_ += giveRewardOnCondition(checkBoardForNLine,1,np.array(new_obs['board']).reshape(6,7),100,3,False)
+            reward_ -= giveRewardOnCondition(checkBoardForNLine,2,np.array(new_obs['board']).reshape(6,7),125,3,False)
+            if len(exp.rewards) > 0:
+                reward = reward_ -reward
+            else:
+                reward = reward_
+
             #Store experience
+            if state:
+                reward = getReward(winner,state,valid,turns)
             exp.store_experience(obs, action, reward)
             #Break if game is over
             if state:
@@ -306,8 +315,8 @@ def train_model(model,rounds,verbose=False,adversary="random"):
 def main(rounds):
     model = make_model()
     train_model(model,rounds,verbose=True)
-    #train_model(model,rounds,adversary="negamax")
+    train_model(model,rounds,adversary="negamax",verbose=True)
 
 if __name__ =="__main__":
-    rounds =  500
+    rounds =  750
     main(rounds)
