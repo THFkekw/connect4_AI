@@ -1,9 +1,8 @@
 import sys
-from Agent.agent import Agent_Tree_Search
-from Agent.utils import *
-from Connect4.env_connect4 import Connect4Board
-from ConnectX.env_connectx import ConnectXBoard
-from ConnectX.heuristic_connectx import *
+from agent import Agent_Tree_Search
+from utils import *
+from env_connect4 import Connect4Board
+from heuristic_connect4 import *
 from time import time
 from tqdm import tqdm
 
@@ -117,19 +116,16 @@ def matchup_agent_vs_human(env,agent,initial_state=None,n_games=1,display=True,m
 
     for game in tqdm(range(n_games)):
         #initialize the game
-        if mix_side:
-            agent.bit_player=game%2+1
-            human_bit_player=(game+1)%2+1
-        else:
-            agent.bit_player=1
-            human_bit_player=2
+        agent.bit_player=2
+        human_bit_player=1
         
         state=initial_state
-        bit_player=1
+        bit_player=2
 
         while True:
             #make the display
             if display:
+                print(state)
                 env.display_state(state)
                 print('--------------------')
 
@@ -155,6 +151,7 @@ def matchup_agent_vs_human(env,agent,initial_state=None,n_games=1,display=True,m
 
             #store the result of the game if the game ends
             if action==None or env.reward(state,action)!=0:  #stop the game
+                print(action)
                 if action==None: #draw
                     print('Game is a draw')
                     counts['Draws']+=1/n_games
@@ -178,13 +175,15 @@ def matchup_agent_vs_human(env,agent,initial_state=None,n_games=1,display=True,m
 
 
 
-env = ConnectXBoard(dim_col=10,dim_row=6,in_a_row=4)
+env = Connect4Board()
 
-agent1=Agent_Tree_Search(max_depth=4,method='alpha_beta_pruning',heuristic_reward=heuristic_reward_connectx,heuristic_sort=heuristic_sort_connectx,bit_player=1)
-agent2=Agent_Tree_Search(method='monte-carlo',max_steps=100,repeat_sim=1,c=0.5,default_policy=random_policy_connectx,bit_player=2)
+#agent2=Agent_Tree_Search(max_depth=9,method='minimax',heuristic_reward=heuristic_reward_connect4,heuristic_sort=heuristic_sort_connect4,bit_player=1)
+agent2=Agent_Tree_Search(max_depth=9,method='minimax',heuristic_reward=heuristic_reward_connect4,bit_player=1)
+#agent2=Agent_Tree_Search(method='alpha_beta_pruning',max_steps=100,repeat_sim=1,c=0.5,default_policy=random_policy_connect4,bit_player=2)
 
-print(matchup_agent_vs_agent(env,agent1=agent1,agent2=agent2,n_games=20,mix_side=True))
+#print(matchup_agent_vs_agent(env,agent1=agent1,agent2=agent2,n_games=20,mix_side=True))
 
 #print(matchup_agent_vs_human(env,agent=agent2,display=True,n_games=1,mix_side=True))
+matchup_agent_vs_human(env,agent2,0,1)
 
 
