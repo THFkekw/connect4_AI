@@ -65,6 +65,7 @@ class Connect4Board:
                                 to_break=True
                 if count==3:
                     return((1 if bit_player==1 else -1))
+                
             return 0
     
     def get_next_state(self,state,action):

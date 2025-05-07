@@ -14,6 +14,7 @@ def heuristic_reward_connect4(env, state):
             p=3**index
             bit_player=(state % (3 * p) - state % p) // p
             for step in [1,env.dim_col,env.dim_col+1,env.dim_col-1]:
+                count=0
                 pos=-1
                 to_break=False
                 while to_break==False:     
@@ -22,9 +23,26 @@ def heuristic_reward_connect4(env, state):
                         bit_neighbor = (state % (3 * p2) - state % p2) // p2
                         #print('index_neighbor',index_neighbor,'bit_neighbor',bit_neighbor,'pos',pos,'count',count)
                         if bit_neighbor == bit_player and index_neighbor>=0 and index_neighbor<=env.dim_col*env.dim_row and col+pos*((step+1)%env.dim_col-1)>= 0 and col+pos*((step+1)%env.dim_col-1)< env.dim_col:
-                            counts[bit_player]+=(1-0.01*step)
+                            counts[bit_player]+=(1-(0.1*(col%4)))
+                            count += 1
+                            counts[bit_player]+=(1-0.01*1)
                             pos+=(1 if pos>0 else -1)
+                            index_neighbor=index+pos*step
+                            p2 = 3** index_neighbor
+                            bit_neighbor = (state%(3*p2)-state%p2)//p2
+                            if bit_neighbor == 0 and index_neighbor>=0 and index_neighbor<=env.dim_col*env.dim_row and col+pos*((step+1)%env.dim_col-1)>= 0 and col+pos*((step+1)%env.dim_col-1)<env.dim_col:
+                                if count==1:#xxo
+                                    counts[bit_player]+=(1-0.007)
+                                if count == 2:#xxxo
+                                    if bit_player ==2:
+                                        counts[bit_player]+=(1-0.0001)
+                                    else:
+                                        counts[bit_player]+=(1-0.003)
+                     
+                            
                         else:
+                            #if bit_neighbor ==0:
+                            #    counts[bit_player]+= (1-0.11)
                             if pos<0:
                                 pos=+1
                             else:

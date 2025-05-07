@@ -48,10 +48,14 @@ For an agent to work properly, the environment 'env' has to have the following m
 class Agent_Tree_Search:
     def __init__(self, bit_player=None,method=None,
                 heuristic_reward=None,heuristic_sort=None,default_policy=None,
-                max_depth=5,max_steps=100,c=1,repeat_sim=10):
+                max_depth=5,max_steps=100,c=1,repeat_sim=10,depth_increase=0):
         self.max_depth = max_depth
+        self.current_depth = 0
+        self.depth_increase = depth_increase
         self.bit_player = bit_player
         self.method=method
+        self.timeout = 8
+        self.count = 0
         assert method in ['minimax','alpha_beta_pruning','monte-carlo'], 'invalid method name'
 
         if method in ['minimax','alpha_beta_pruning']: 
@@ -102,7 +106,9 @@ class Agent_Tree_Search:
             best_action=actions[0]
             for action in actions:
                 #if a winning move has been found
-                if env.reward(current_state,action) == -1:
+                if env.reward(current_state,action)==-1:
+                    pass
+                elif env.reward(current_state,action) == -1:
                     return(action,-1)
                 #else if the move is not winning
                 else:
@@ -115,20 +121,34 @@ class Agent_Tree_Search:
 
             return(best_action,min_eval)
         
+    def increase_depth(self):
+        if self.count > self.timeout:
+            if self.current_depth%3==0 and not self.current_depth==0:
+                self.max_depth+=1
+            
+            self.current_depth+=self.depth_increase
+        else:
+            self.count+=1
+        print(self.max_depth,self.current_depth)
+
 
     def alpha_beta_pruning_search(self,env,heuristic_reward,heuristic_sort,current_state, alpha, beta, depth=None, bit_player=None):
-
+        #self.current_depth += self.depth_increase
+        #if self.current_depth%1==0:
+        #    self.max_depth+=1
         actions=heuristic_sort(env,current_state,env.get_available_actions(current_state,bit_player),bit_player)
-
+        #actions == env.get_available_actions(current_state,bit_player)
         #leaf
         if depth==0 or len(actions)==0:
             return(None,heuristic_reward(env,current_state))
         
-        
+        #beta = inf
+        #alpha = -inf
         #not leaf, maximizing player
         if bit_player==1:
             max_eval = -inf
             best_action=actions[0]
+            count = 0
             for action in actions:
                 #if a winning move has been found
                 if env.reward(current_state,action) == 1:
@@ -151,6 +171,7 @@ class Agent_Tree_Search:
             best_action=actions[0]
             for action in actions:
                 #if a winning move has been found
+                
                 if env.reward(current_state,action) == -1:
                     return(action,-1)
                 #else if the move is not winning

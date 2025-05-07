@@ -86,7 +86,7 @@ def matchup_agent_vs_agent(env,agent1,agent2,initial_state=None,n_games=100,disp
     avg_time_spent=round_dict(avg_time_spent,3)
     return(counts,avg_time_spent)
 
-def matchup_agent_vs_human(env,agent,initial_state=None,n_games=1,display=True,mix_side=True):
+def matchup_agent_vs_human(env,agent,initial_state=None,n_games=1,display=True,mix_side=True,start_bit=1):
     '''
 
     matchup is a function that runs a match between agent1 and agent2 on the specified game environment.
@@ -116,11 +116,11 @@ def matchup_agent_vs_human(env,agent,initial_state=None,n_games=1,display=True,m
 
     for game in tqdm(range(n_games)):
         #initialize the game
-        agent.bit_player=2
-        human_bit_player=1
+        agent.bit_player=1
+        human_bit_player=2
         
         state=initial_state
-        bit_player=2
+        bit_player=start_bit
 
         while True:
             #make the display
@@ -164,6 +164,7 @@ def matchup_agent_vs_human(env,agent,initial_state=None,n_games=1,display=True,m
                 break
 
             # update the state and bit_player
+            agent.increase_depth()
             state=env.get_next_state(state,action)
             bit_player=(1 if bit_player ==2 else 2)
 
@@ -178,12 +179,13 @@ def matchup_agent_vs_human(env,agent,initial_state=None,n_games=1,display=True,m
 env = Connect4Board()
 
 #agent2=Agent_Tree_Search(max_depth=9,method='minimax',heuristic_reward=heuristic_reward_connect4,heuristic_sort=heuristic_sort_connect4,bit_player=1)
-agent2=Agent_Tree_Search(max_depth=9,method='minimax',heuristic_reward=heuristic_reward_connect4,bit_player=1)
-#agent2=Agent_Tree_Search(method='alpha_beta_pruning',max_steps=100,repeat_sim=1,c=0.5,default_policy=random_policy_connect4,bit_player=2)
+#agent2=Agent_Tree_Search(max_depth=9,method='minimax',heuristic_reward=heuristic_reward_connect4,bit_player=1,depth_increase=0.5)
+agent2=Agent_Tree_Search(max_depth=8,method='alpha_beta_pruning',max_steps=100,repeat_sim=1,c=0.5,default_policy=random_policy_connect4,bit_player=1,depth_increase=1,heuristic_sort=heuristic_sort_connect4,heuristic_reward=heuristic_reward_connect4)
 
-#print(matchup_agent_vs_agent(env,agent1=agent1,agent2=agent2,n_games=20,mix_side=True))
+#print(matchup_agent_vs_agent(env,agent1=4
+#agent1,agent2=agent2,n_games=20,mix_side=True))
 
 #print(matchup_agent_vs_human(env,agent=agent2,display=True,n_games=1,mix_side=True))
-matchup_agent_vs_human(env,agent2,0,1)
+matchup_agent_vs_human(env,agent2,0,1,start_bit=1)
 
 
